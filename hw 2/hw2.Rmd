@@ -1,0 +1,115 @@
+---
+title: '95868 Homework 2'
+author: "Mohammad Manzoor Hassan Mirza"
+output: 
+  html_document:
+    fig_width: 8
+    fig_height: 10
+---
+
+#### Instructions 
+
+Submit this Rmd file and html output on canvas. Don't forget to put your name above!!
+
+Fill in the missing code chunks to answer the following questions. You should use a reasonable coding style and comment your code so that it is clear what you are doing. As a rough rule of thumb, expect to add multiple comments to each missing code chunk.
+
+#### Questions 
+
+
+We'll use the data file `hw2_data.rda`, which should be in the same directory as this markdown file (which should also be your working directory)
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# load hw1_data2.rda from the working directory
+load('hw2_data.rda')
+```
+
+Unlike a CSV file, which only contains one data frame, an `.rda` file contains multiple R variables, and can only be opened by R. You should have the following data frames, all taken from the Consumer Expenditure Survey:
+
+1. `expenditure`: A data frame of expenditure amounts by category for 4000 households
+2. `household`: A data frame of household and demographic information (for the same 4000 households).
+3. `income`: A data frame of income and job information (for the same 4000 households)
+
+The column names for `expenditure`, `household`, and `income` are hard to decipher. So there are 3 more data frames, with explanations for the column names.
+
+4. `expenditure.key`: Description of each column in `expenditure`
+5. `household.key`: Description of each column in `household`
+6. `income.key`: Description of each column in `income`
+
+Finally, there are two more data frames:
+
+7. `item.purchases`: Each row corresponds to a specific itemized purchase made by the households. The household ID, the cost, and a `ucc` code giving a description of the purchase is included.
+8. `item.key`: Descriptions of the different `ucc` codes
+
+Note that in `expenditure.key`, several of the expenditure categories have numbers, giving the "level" of the category. For example `food (1)` can be divided into `food at home (2)` and `food away from home (2)`. The latter subcategory can be further divided into `food excluding meals as pay (3)` and `meals as pay (3)`.
+
+**Problem 1:** 
+
+Make a dot chart (see example) showing the 30 most common itemized purchases, and how often they were reported in the data frame `item.purchases`. You should use the actual category descriptions in your chart, not the UCC codes.
+
+```{r, fig.height = 7, fig.width = 5}
+# Fill in, with comments added:
+
+# merging two datasets on the common item key
+item.merged = left_join(item.purchases, item.key, by = 'ucc')
+
+# extracting the top 30 most frequently occurring items from the dataset
+top.30 = item.merged %>%
+  group_by(descr) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(30)
+
+# creating a dot plot of these items with description categories reordered based on item counts 
+ggplot(data = top.30, mapping = aes(y = reorder(descr, (count)), x = count)) + geom_point(size = 3)
+```
+
+**Problem 2a:**
+
+Make the same dot chart as before, but group the households into 10 equally sized groups (i.e. each group has the same number of households), according to the age of the reference person. For each age group, show the same 30 categories as you did in problem 1. 
+
+Use `facet_wrap()` or `facet_grid()` to show your results in 10 charts, one per age group. 
+
+Hint: by default R will list the categories in alphabetical order in the plot -- how would be improve this?
+
+```{r}
+# creating 10 equally sized groups from a continuous variable, age 
+household$age_ref = cut_number(household$age_ref, n = 10)
+
+# Merging the household dataset with merged expenditures dataset
+hshld.exp_merged = left_join(household, item.merged, by = 'newid')
+
+# creating a summary table and filtering it based on the categories found in the top 30 table from prev. part 
+hshld.exp_subset = hshld.exp_merged %>%
+  group_by(age_ref, descr) %>%
+  summarise(count = n()) %>%
+  filter(descr %in% top.30$descr)
+
+# creating a facet wrap with each cell reflecting a an age bracket
+ggplot(data=hshld.exp_subset, mapping=aes(x=count, y=reorder(descr, (count)))) +
+  geom_point(size=2) + facet_wrap("age_ref", ncol = 5)
+```
+
+**Problem 2b**
+
+One problem with the plot of Problem 2a is that it's really hard compare counts across facets. For example, try to see which age purchased the most gasoline.
+
+Redo the previous plot, but add some kind of reference dots or reference lines to the background of each facet to fix this problem.
+
+```{r}
+# creating a new df with age excluded (for each category/ row, this will give reference dots for all age groups)
+hsd.no.facet = subset(hshld.exp_subset, select = c('descr', 'count'))
+
+# creating ggplot with reference points added for each cell of the facet wrap 
+ggplot(data=hshld.exp_subset, mapping=aes(x=count, y=reorder(descr, (count)))) +
+  geom_point(data = hsd.no.facet, color='grey', size=2) + geom_point(size=2) + facet_wrap("age_ref", ncol = 5)
+```
+
+How would you describe the difference between the youngest group and the oldest group in this plot?
+
+ANS: For the first four categories: alcoholic beverages, shopping, gasoline, dining out etc., individuals in the youngest bracket [16,27] tend to purchase more frequently than those in the oldest age group [74,87] in consideration here. 
+
+On the other hand, individuals in the older age group spend higher on cable/satellite servers, magazine/newspaper subscription compared to the youngest group, possibly due to their preference towards spending time indoors. Similarly, house ownership related purchases such as electricity at owned dwellings, property taxes rental equivalence of owned home reflect vast differences between the two groups, primarily since the older population invests more in real estate compared to the youngest group. Moreover, health related purchases such as prescription drugs and medicare payments are significantly highest for the oldest group vs. the youngest group. 
+
+Finally, differences in recreational behavior is worth highlighting here, and is reinforced by some categories such as movie/theater/opera/ballet, where the youngest group spends significantly more than the older group. Another psychographic factor which can be seen here is that the young people are possibly less religious compared to older generations, which is captured by the category contributions to church/ religious organizations, where the oldest group tends to spend much more frequently. 
