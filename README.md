@@ -20,9 +20,9 @@ I. Data Cleaning and Aggregation: [Homework I](https://github.com/mhmirza/Descri
 
 II. Data Visualization: [Homework II](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/hw%202)
 
-III. Statistical Tests: [Homework III](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/hw%203)
+III. Identifying Outliers using p-values and Bonferoni-corrected CIs: [Homework III](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/hw%203)
 
-III. Statistical Tests: [Homework IV](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/hw%203)
+IV. Understanding Distributions Using Quantile Plots & QQ-Plots: [Homework IV](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/hw%204)
 
 # Final Project
 
