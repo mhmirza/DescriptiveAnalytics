@@ -26,21 +26,6 @@ IV. Understanding Distributions Using Quantile Plots & QQ-Plots: [Homework IV](h
 
 # Final Project
 
-**Brief Description:** "Sex-related differences: Is there a significant difference in income between men and women? Does the difference vary depending on other factors (e.g., education, marital status, criminal history, drug use, childhood household factors, profession, etc.)?"
+**Brief Description:** The first part of the project focuses on manipulating data to identify and explore details of outliers in crime data. For example, detecting anomalies for block-week i.e. weeks for which crimes in a particular block (Possion Random Variable) were unusually high compared to the weekly average for that block. The second part of the project relies upon concepts from variable transformation, splines & cross-validation, and variable interactions. The final part draws upon individual creativity to use a movie related dataset for creating an insightful visualization.   
 
-The main question of interest was answered in the project through the following steps:
-
-1) **Data processing and summarization:** Insightful graphical and tabular summaries of the data
-
-2) **Methodology:** Dealing with missing values and topcoded variables; exploring trends and correlations; variable selection
-
-3) **Findings:** Tabular summaries; graphical Summaries; regression and interpretation of coefficients; assessment of statistical significance
-
-4) **Discussion:** Potential confounders; model fit limitations; confidence in results for policy makers
-
-To view the different components of the project, please click on the hyperlinks for each part below.
-
-* [Project Prompt](https://github.com/mhmirza/RAnalytics/blob/main/Final%20Project/Final%20Project%20Prompt.pdf)
-* [Data](https://github.com/mhmirza/RAnalytics/blob/main/Final%20Project/nlsy97_Nov2020.csv)
-* [Data Description](https://github.com/mhmirza/RAnalytics/blob/main/Final%20Project/nlsy97_codebook.txt)
-* [R Code](https://github.com/mhmirza/RAnalytics/blob/main/Final%20Project/Final%20Project%20Submission.Rmd)
+To view the project, please click [here](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/Project). 
