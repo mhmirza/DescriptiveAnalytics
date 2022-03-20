@@ -6,7 +6,7 @@ This portfolio captures the work I completed for a course, **Exploring and Visua
 
 # What I hope to learn?
 
-From the course, Programming in R for Analytics, I wish to learn how to use RStudio, read R documentation, and write R scripts. Moreover, I hope to gain an understanding of how to use R for production of graphics and data manipulation such as filtering, aggregating etc. I plan to learn how transformations, model fits, and residuals can be used to explore and check statistical assumptions about data. Finally, I wish to gain insights into how techniques such as simulation can be used to explore questions of model fit and statistical significance.
+From the course, Exploring and Visualizing Data, I wish to learn how to use RStudio, read R documentation, and write R scripts. Moreover, I hope to gain an understanding of how to use R for production of graphics and data manipulation such as filtering, aggregating etc. I plan to learn how transformations, model fits, and residuals can be used to explore and check statistical assumptions about data. Finally, I wish to gain insights into how techniques such as simulation can be used to explore questions of model fit and statistical significance.
 
 # Portfolio
 
