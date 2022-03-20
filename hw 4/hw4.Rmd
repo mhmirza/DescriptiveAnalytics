@@ -1,0 +1,280 @@
+---
+title: 95-868 Homework 4
+author: Mohammad Manzoor Hassan Mirza
+output: html_document
+---
+
+#### Instructions 
+
+Submit this Rmd file and html output on canvas.
+
+Code should be clearly commented. Plots should be presentable and properly labeled. Mitigate overplotting whenever possible. Feel free to increase the `fig.width` and `fig.height` arguments in each R code chunk to make your figures easy to read. Don't forget to answer the short response questions -- you can just type your answers into the markdown file.
+
+#### Preliminaries
+
+We'll use the data file `hw4_data.csv`, which should be in the same directory as this markdown file (which should also be your working directory). It is a data frame of expenditures by household from the consumer expenditure survey
+
+We will also use the `ggplot2movies` library, which contains a dataset of movie rankings
+
+Normally, the cross validation results will be different each time, since a random sample is taken. This could make grading difficult since we may not see the same results that you see. The command `set.seed(x)`, where `x` is any number, fixes the random number generator to give the same output every time.
+
+
+```{r}
+set.seed(1)
+
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggplot2movies) # for movies 
+require(gridExtra)
+
+```
+
+#### Questions 
+
+
+**Problem 1a:** 
+
+Using the expenditures in the data set `hw4_data.csv', group the households into two categories:
+
+* apartments: those whose `home.type` is "apartment or flat" or "high-rise"
+* homes: those whose `home.type` is "single family detached"
+
+Look at the `housing` expenditures for the two groups using a quantile plot. It should be easy to see the difference in the two groups for higher quantiles, but the difference should be hard to see for the lower quantiles.
+
+
+```{r fig.width=8, fig.height=6, dpi=100, fig.align='center'}
+
+# loading the dataset
+expenditure = read.csv(file = 'hw4_data.csv', header = T)
+
+expenditure$home.type = recode(expenditure$home.type,
+                               "apartment or flat" = 'apartments',
+                               "high-rise" = 'apartments',
+                               "single family detached" = 'homes')
+
+# creating a subset with only two home types
+exp_subs <- filter(expenditure, home.type == "apartments" | home.type == "homes")
+
+# make a quantile plot
+ggplot(data = exp_subs, mapping=aes(sample = housing, color = home.type)) + 
+  stat_qq(distribution = qunif) + 
+  scale_x_continuous(n.breaks = 10) +
+  labs('Quantiles, housing expenditues', x = 'Quantiles', y = 'Amount (dollars)', 
+       title = 'Quantile Plot, Housing Expenditures')
+
+```
+
+
+**Problem 1b:**
+
+Now compare the two groups after a log transform. (Note: you'll need to restrict your analysis to only those households who spent a positive amount, since otherwise the log is infinite or undefined)
+
+```{r fig.width=8, fig.height=6, dpi=100, fig.align='center'}
+
+# restricting to positive housing expenditures
+expenditures.pos = subset(exp_subs, subset = housing > 0)
+
+# taking the log of housing expenditures
+expenditures.pos = mutate(expenditures.pos, log.housing = log(housing))
+
+# plotting log housing expenditures for two groups on quantile plot
+ggplot(data = expenditures.pos, mapping = aes(sample = log.housing, color = home.type)) +
+  stat_qq(distribution = 'qunif') + scale_x_continuous(n.breaks = 10) +
+  labs(x = 'Quantiles', y = 'Log Expenditures ', title = 'Quantile Plot, Log Housing Expenditures')
+```
+
+QUESTION: Is the difference at the lower quantiles easier to see? Do the distributions look similar up to an additive shift?
+
+ANS: Yes, the difference at the lower quantiles is easier to see after the log transformation. There is an apparent additive shift between the two quantiles.
+
+**Problem 1c:**
+
+Keeping the log transform from part 1b, now compare each of the groups to a theoretical normal distribution. 
+
+Hint: you may want to first standardize the log costs. To do this, subtract their mean and dividing by their standard deviation (separately for each group).
+
+```{r fig.width=8, fig.height=6, dpi=100, fig.align='center'}
+
+# from the subset of expenditure data with only homes & apts, creating another subset with homes 
+exp_subs_homes <- expenditures.pos %>%
+  filter(home.type == 'homes')
+
+# from the subset of expenditure data with only homes & apts, creating another subset with apts
+exp_subs_apt <- expenditures.pos %>%
+  filter(home.type == 'apartments')
+
+# standardizing the housing costs for homes  
+home_housing.standardized = with(exp_subs_homes, 
+                                 (log.housing - mean(log.housing))/sd(log.housing))
+
+# standardizing the housing costs for apartments
+apt_housing.standardized = with(exp_subs_apt, 
+                                (log.housing - mean(log.housing))/sd(log.housing))
+
+# plotting homes' standardized housing costs and comparing it with normal distribution
+ggplot(mapping=aes(sample = home_housing.standardized)) + 
+  stat_qq(distribution='qnorm') +
+  geom_abline(intercept=0, slope=1) +
+  labs(x = 'Normal Quantiles', y ='Homes Housing Costs (standardized)',
+       title = 'QQ plot, Home Housing Costs (standardized) 
+       vs Normal Distribution')
+
+# plotting apartments' standardized housing costs and comparing it with normal distribution
+ggplot(mapping=aes(sample = apt_housing.standardized)) + 
+  stat_qq(distribution='qnorm') +
+  geom_abline(intercept=0, slope=1) +
+  labs(x = 'Normal Quantiles', y ='Apartments Housing Costs (standardized)',
+       title = 'QQ plot, Apartment Housing Costs (standardized) 
+       vs Normal Distribution')
+
+```
+
+QUESTION: Do the log costs look normally distributed? Which deviates further from a normal distribution: the lowest quantiles, or the highest quantiles?
+
+ANS: Here, we have used a QQ plot to compare the distribution of housing costs for each group with the normal distribution. The distribution of log costs for both the groups seem to be approximately normal, although the tail ends do not overlap  y=x line. However, this wiggle maybe due to randomness and we can only confirm that if we use using simulated data from a Normal (0,1) distribution to see if the visualization reflects a similar pattern. For distributions of both the groups, the lowest quantiles deviate further from the normal distribution.
+
+**Problem 2a:**
+
+Using the `movies` dataset in the `ggplot2movies` library, make a quantile plot comparing the ratings for movies in the year 1940 vs the year 2003. You can put both quantiles on the same plot with different colors, or show them in different plots using `facet_wrap()` or `facet_grid()`, either is fine. 
+
+Hint: Since you are using `year` as a grouping variable, you may need to convert it from a number to a factor. You can use `as.factor(year)` instead of `year` to do this.
+
+```{r fig.width=6, fig.height=3, dpi=100, fig.align='center'}
+
+# creating a subset with only two home types
+movies_subs <- filter(movies, year == "1940" | year == "2003")
+
+# make a quantile plot
+ggplot(data = movies_subs, mapping=aes(sample = rating, color = as.factor(year))) + 
+  stat_qq(distribution = qunif) + 
+  scale_x_continuous(n.breaks = 10) +
+  labs(title = 'Quantiles, 1940 and 2003 Ratings', x = 'Quantiles', 
+       y = 'Ratings')
+
+# calculating the variance of each group
+movies_subs %>%
+  group_by(year) %>%
+  summarise(variance = var(rating))
+```
+
+QUESTION: Do the distributions look different? Which year had a higher percentage of ratings above 9.0? Which year had a higher percentage of ratings below 5.0? Which year had a higher variance?
+
+ANS: Yes, the distributions look different since they do not overlap, except around the 40th percentile. 2003 had a higher percentage of ratings above 9.0 whereas 1940 had a higher percentage of ratings below 5.0.
+
+**Question 2b:**
+
+Without using any transforms, do a `t.test` to check if the ratings from 1940 and 2003 could have come from the same distribution. 
+
+```{r fig.width=6, fig.height=3, dpi=100, fig.align='center'}
+
+# t test to check diff in means between two groups
+with(movies_subs,
+t.test(x = rating[year == "1940"], y = rating[year == "2003"]))
+
+```
+
+QUESTION: What is the mean of each group? Based on the t-test alone, would you conclude that the ratings came from different distributions? Having also seen a quantile plot of the two groups, would you agree with this conclusion?
+
+ANS: The mean of ratings in 1940 is 6.27 and the mean of ratings in 2003 is 6.34. Since the p-value of the test is greater than 0.05, we fail to reject the null hypothesis, which may be indicative of the fact that the ratings for each of these groups came from the same distribution.
+
+**Problem 3:**
+
+Compare the distribution of ratings for each of the genres: action, animation, comedy, drama, documentary, romance, and short. If a movie belongs to more than one genre, include it in both distributions. Use both quantile plots and Q-Q plots. For the quantile plot, you will want to use facets to divide the data into genres, and show a common reference line (specifically, the distribution of the pooled data) in each facet to make visual comparisons easy. For the QQ plot you will similarly compare the quantiles of each genre against the quantiles of the pooled data.
+
+Hint: To make the facet wrap of QQ plots, you will want to write your own QQ plot funtion and use it inside a `group_by %>% summarise` pipe-- see the notes for an example of this. (NOTE: you may need to re-install `dplyr` if you are using an older version, for this to work)
+
+
+```{r fig.width=8, fig.height=6, dpi=100, fig.align='center'}
+
+# QUANTILE PLOT
+
+# collapsing all seven genres cols into one Genre column
+movies_melt <- pivot_longer(movies, Action:Short, names_to = 'Genre') %>%
+  filter(value != 0)
+
+# copy movies data frame but with no genres column - used for pooled ratings reference line
+movies_no.genres = subset(movies, select='rating')
+
+# make a quantile plot, faceted by genre, then added pooled quantiles
+ggplot(data = movies_melt, mapping = aes(sample = rating)) +
+  stat_qq(distribution = qunif) + facet_wrap('Genre') +
+  stat_qq(data = movies_no.genres, mapping = aes(sample = rating), 
+          distribution = qunif, geom='line') +
+  labs(x = 'Quantiles', y = 'Ratings', title = 
+         'Quantile Plot (reference line: pooled data quantiles)')
+
+# QQ PLOT
+
+# This function finds the quantiles to create a QQ plot comparing x and y dist.
+Find.QQ = function(x, y){
+  n.pts = min( length(x), length(y))
+  probs = seq(from = 0, to = 1, length.out = n.pts)
+  qx = quantile(x, probs= probs)
+  qy = quantile(y, probs=probs )
+  return( data.frame(qx = qx, qy = qy, quantile = probs))
+}
+
+# Using Find.QQ on each group and comparing to all of the ratings
+many.QQplots = movies_melt %>%
+  subset(select = c('Genre', 'rating')) %>%
+  group_by(Genre) %>%
+  summarise(Find.QQ(movies_melt$rating, rating))
+
+# multiple QQ plots for comparing group ratings with pooled ratings
+ggplot(data = many.QQplots, mapping=aes(x=qx, y=qy)) +
+  geom_point() +
+  facet_wrap('Genre') +
+  labs(title='QQ plots, Groups vs Pooled Data',
+       x = 'All ratings', y = 'Grouped ratings') +
+  geom_abline(intercept = 0, slope=1)
+
+```
+
+QUESTIONS: True or False: 
+
+* The ratings distribution for action movies is worse than those of the pooled movies: TRUE
+* Animation movies have better ratings than the overall distribution at the lower quantiles: TRUE
+* Documentaries have better ratings than the overall distribution at the higher quantiles: TRUE
+
+Also, which worked better for answering the T/F questions: quantile plots or QQ plots?
+
+ANS: QQ plots are much easier to read since the y=x line provides a good demarcation to compare the two distributions. Moreover, curves in the quantile plot have nuanced features, which are not as easy as QQ plots for visual interpretation.
+
+**Problem 4:**
+
+Compare the distribution of ratings for each of the genres, and also for the following time periods: 1900-1920, 1921-1940, 1941-1960, 1961-1980, 1981-2000. Use Q-Q plots. You should make a "facet grid" with one plot for each combination of time period and genre -- i.e., there should be 35 plots total. You may remove movies for which the year is not reported.
+
+```{r fig.width=10, fig.height=10, dpi=100, fig.align='center'}
+
+# creating time periods from the year column
+movies_melt$year <- cut(movies_melt$year, breaks = 5,labels = c('1900-1920', '1921-1940','1941-1960','1961-1980','1981-2000'))
+
+# Using Find.QQ on each group and comparing to all of the ratings
+many.QQplots = movies_melt %>%
+  subset(select = c('Genre', 'year', 'rating')) %>%
+  group_by(Genre, year) %>%
+  summarise(Find.QQ(movies_melt$rating, rating))
+
+# multiple QQ plots for comparing group ratings with pooled ratings
+ggplot(data = many.QQplots, mapping=aes(x=qx, y=qy)) +
+  geom_point() +
+  labs(title='QQ plots, groups vs pooled data',
+       x = 'Ratings, All Movies', y = 'Ratings, Genre/Year Group')  +
+  geom_abline(intercept = 0, slope=1) + facet_grid(Genre ~ year)
+
+```
+
+QUESTIONS:
+
+* Describe how the distribution of ratings for action movies changed over time, relative to the pooled ratings
+
+Initially, the ratings for action movies started off worse than pooled ratings. However, between 1920-1960, they performed better compared pooled ratings at lower quantiles. This improvement disappeared for the last two time periods seen here: they performed worse than pooled ratings i.e. compared to the corpus of all movies.
+
+* Describe how the distribution of ratings for comedies changed over time, relative to the pooled ratings
+
+Initially, at lower quantiles, comedy ratings performed better relative to the pooled ratings, but worse at higher quantiles. This trend persisted till 1960, although comedy ratings were now outperforming pooled ratings for a wider set of quantiles. Eventually, in the last two time period seen here, comedy ratings were similar (slightly worse for lower quantiles) to pooled ratings.
+
+Just for fun: do your findings for either of these questions agree with your intuition or knowledge about action and comedy movies? (this questions won't be graded)
+
+ANS: It makes sense since action movies were very popular in the past, and now the audience possibly wants more realistic content. However, I am surprised to see how comedy movies, despite all growing concerns in the world about mental health, have reduced in popularity when compared to pooled ratings of movies, irrespective of genre.
