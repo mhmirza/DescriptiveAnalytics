@@ -1,0 +1,177 @@
+---
+title: '95868 Homework 1'
+author: "Mohammad Manzoor Hassan Mirza"
+output: 
+  html_document:
+    fig_width: 8
+    fig_height: 10
+---
+
+
+#### Instructions 
+
+Submit this Rmd file and html output on canvas. Don't forget to put your name above!!
+
+Fill in the missing code chunks to answer the following questions. You should use a reasonable coding style and comment your code so that it is clear what you are doing. As a rough rule of thumb, expect to add multiple comments to each missing code chunk.
+
+If the question asks for a short sentence description, you can type this into the file directly.
+
+Here are two recommended ways that you can report your answer:
+
+**Example Question 1:** In the `cars` data set, what is the average value of the `speed` column?
+
+```{r}
+# take average of mpg$speed, save as variable
+avg.speed = mean(cars$speed)
+```
+
+**Answer:** The average value was `r avg.speed`
+
+**Example Question 1:** In the `ChickWeight` dataset, what was the average weight of the chickens grouped by each diet type?
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(knitr) # for the kable() function, which prints data frames as tables:
+
+# group the chickens by diet and take average weight
+avg.weights = ChickWeight %>%
+  group_by(Diet) %>%
+  summarise(avg.weight = mean(weight))
+
+# display the data frame as an easy-to-read table, with 3 significant digits
+kable(avg.weights, digits = 3, col.names = c('Diet', 'Average Weight'))
+
+# or you can display more primitively if the data frame is small
+avg.weights
+```
+
+
+#### Questions 
+
+**Note:** When grading, we will place the data file `hw1_data.csv` is in the same directory as your .Rmd file. Please write your code so that it compiles successfully when we grade it.
+
+**Problem 1:** 
+
+Load the CSV file `hw1_data.csv` into memory, using the command `read.file()` or `read.csv()` as described in lecture. Save the result as a variable called `expenditure`. 
+
+Hint: You may want to look at the CSV file using another program such as excel to see if the first row is a header. 
+
+```{r}
+# reading in the data file with headers 
+expenditure = read.csv(file = 'hw1_data.csv', header = T)
+```
+
+**Problem 2:**
+
+a) How many records are in the data set? 
+
+```{r}
+# checking rows and columns
+glimpse(expenditure)
+
+# number of records in the dataset
+nrow(expenditure)
+```
+
+b) The column `home.type` describes the type of home belonging to each respondent. What are the different levels that this column is allowed to take?
+```{r}
+# Checking levels of the factor variable home type
+levels(factor(expenditure$home.type))
+```
+
+**Problem 3:**
+
+What fraction of records in the data set belong to each `home.type`? In your answer, order the home types by how many records they have (largest first).
+
+```{r}
+# computing the fraction of each home type in the dataset
+hometype.frac <- expenditure %>% 
+  group_by(home.type) %>% 
+  summarise(number = n(), fraction = n()/nrow(expenditure)) 
+
+# sorting the fractions in a descending order
+hometype.frac[order(-hometype.frac$fraction), ] %>%
+  kable(digits = 3, col.names = c('Home Type', 'Number','Fraction in Dataset'))
+```
+
+**Problem 4:**
+
+Change the `expenditure` data frame so that `home.type` column has only 3 coded types: 
+
+1. single family detached homes
+2. apartments or flats
+3. other (everything else)
+
+Print the number of records in each `home.type` as a table. 
+
+```{r}
+# reducing the no. of levels in the categorical variable, home.type:
+expenditure$home.type = recode(expenditure$home.type,
+                               "mobile home or trailer" = 'other',
+                               "row or townhouse inner unit" = 'other',
+                               "duplex" = 'other',
+                               "high-rise" = 'other',
+                               "3-plex or 4-plex" = 'other',
+                               "end row or end townhouse" = 'other',
+                               "garden" = 'other',
+                               "dormitory" = 'other')
+
+# the number of records in the coalesced home types
+expenditure %>% 
+  group_by(home.type) %>% 
+  summarise(Number = n()) 
+```
+
+**Problem 5a:**
+
+Create a subset of the `expenditure` data set consisting of just those households whose income rank is above 95%. We will call these the "rich" households. 
+
+```{r}
+# creating a subset of rich households i.e. income rank > 95%
+rich <- expenditure %>%
+  subset(income.rank > 0.95)
+```
+
+(you don't have to print the result, we'll use it in the next part)
+
+**Problem 5b:**
+
+What fraction of the households in the `expenditure` data set live in the Midwest, Northeast, South, West, and NA regions of the US? In comparison, how does your answer change if you look only at the subset of the data consisting of those households whose income rank is above 95% (from problem 5a)? Give both results, and then describe in words how they are different. 
+
+```{r}
+# computing the fraction of households in the dataset, within each region
+region.frac <- expenditure %>% 
+  group_by(region) %>% 
+  summarise(number = n(), fraction = n()/nrow(expenditure)) 
+
+# sorting the fractions in a descending order
+region.frac[order(-region.frac$fraction), ] %>%
+  kable(digits = 3, col.names = c('Home Type', 'Number', 'Fraction in Dataset'))
+
+# visualizing the distribution in the entire dataset  
+ggplot(data = region.frac, mapping = aes(x = region, y = fraction)) + geom_bar(stat = 'identity',
+                                                                               position='dodge')
+
+# computing the fraction of households in the rich subset, within each region
+rich.region.frac <- rich %>% 
+  group_by(region) %>% 
+  summarise(number = n(), fraction = n()/nrow(rich)) 
+
+# sorting the fractions in a descending order
+rich.region.frac[order(-rich.region.frac$fraction), ] %>%
+  kable(digits = 3, col.names = c('Home Type', 'Number', 'Fraction in Subset'))
+
+# visualizing the distribution in the subset 
+ggplot(data = rich.region.frac, mapping = aes(x = region, y = fraction)) + geom_bar(stat = 'identity',
+                                                                               position='dodge')
+```
+
+How are the distributions different?
+
+ANS: In both cases, most of the households in the dataset belong to the Southern region. Moreover, we do not see any missing values in the 'rich' subset of households. For 'rich' subset of households, Midwest has the lowest fraction i.e. ~21%. However, for the entire dataset, Northeast has the lowest fraction i.e. ~18%. Finally, the region, West, has a higher fraction (4% high) of households for the 'rich' subset than the entire dataset.
+
+**Discussion:** In this question, we are comparing the regional distribution of the entire dataset, vs the regional distribution of just the people who are in the top 5% of income. Sometimes students are confused about how to use percentages to compare two different groups **When using percentages to compare groups, the percentages should sum to 100% within each group**. 
+
+**Discussion:** Often times you may feel that the instructions are ambiguous and a plot or table can be constructed multiple ways. In these cases, **make the plot each way
+before asking me for clarification. Then try to figure out on your own which way makes more sense for understanding the data.** After this, if you are still unclear, let me know. There will **always** be ambiguity in going from english instructions to code -- in fact, in the workplace your client might not exactly know which method will be best for their data (after all, they are asking you to analyze it), and it will be up to you to figure this out on your own.
