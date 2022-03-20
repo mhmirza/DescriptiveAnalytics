@@ -26,6 +26,6 @@ IV. Understanding Distributions Using Quantile Plots & QQ-Plots: [Homework IV](h
 
 # Final Project
 
-**Brief Description:** The first part of the project focuses on manipulating data to identify and explore details of outliers in crime data. For example, detecting anomalies for block-week i.e. weeks for which crimes in a particular block (Possion Random Variable) were unusually high compared to the weekly average for that block. The second part of the project relies upon concepts from variable transformation, splines & cross-validation, and variable interactions. The final part draws upon individual creativity to use a movie related dataset for creating an insightful visualization.   
+**Brief Description:** The first part of the project focuses on manipulating data to identify and explore details of outliers in a crime related dataset. For example, detecting anomalies for block-week i.e. weeks for which crimes in a particular block (Possion Random Variable) were unusually high compared to the weekly average for that block. The second part of the project relies upon concepts from variable transformation, splines & cross-validation, and variable interactions. The final part draws upon individual creativity to use a movie related dataset for creating an insightful visualization.   
 
 To view the project, please click [here](https://github.com/mhmirza/DescriptiveAnalytics/tree/main/Project). 
