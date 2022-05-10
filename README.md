@@ -4,9 +4,9 @@
 
 This portfolio captures the work I completed for a course, **Exploring and Visualizing Data**, at Carnegie Mellon University in Spring 2022. The work done here involves statistical exploration, detailed visualization of data, and model fitting. To view my course repository on GitHub, please click [here](https://github.com/mhmirza/DescriptiveAnalytics).
 
-# What I hope to learn?
+# What I got to learn?
 
-From the course, Exploring and Visualizing Data, I wish to learn how to use RStudio, read R documentation, and write R scripts. Moreover, I hope to gain an understanding of how to use R for production of graphics and data manipulation such as filtering, aggregating etc. I plan to learn how transformations, model fits, and residuals can be used to explore and check statistical assumptions about data. Finally, I wish to gain insights into how techniques such as simulation can be used to explore questions of model fit and statistical significance.
+From the course, Exploring and Visualizing Data, I learnt how to use RStudio, read R documentation, and write R scripts. I gained an understanding of how to use R for production of graphics and data manipulation such as filtering, aggregating etc. Moreover, I learnt how transformations, model fits, and residuals can be used to explore and check statistical assumptions about data. Finally, I gained insights into how techniques such as simulation can be used to explore questions of model fit and statistical significance.
 
 # Portfolio
 
